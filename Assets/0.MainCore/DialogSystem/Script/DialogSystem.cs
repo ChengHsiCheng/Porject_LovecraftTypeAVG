@@ -1,189 +1,214 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using Ink.Runtime;
 using Sirenix.OdinInspector;
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
-using System.Linq;
+using UnityEngine.InputSystem;
 
 public class DialogSystem : MonoBehaviour
 {
+    [BoxGroup("參照")] [LabelText("ink 劇本（.json）")] [Required]
+    [Tooltip("要拖編譯後的 .json，不是 .ink")]
     [SerializeField] private TextAsset _inkAsset;
-    private Story _inkStory;
 
-    [FoldoutGroup("GameObject")] [SerializeField]
+    [BoxGroup("參照")] [LabelText("對話文字")] [Required] [SerializeField]
     private TMP_Text _dialogueText;
 
-    [FoldoutGroup("GameObject")] [SerializeField]
-    private TMP_Text _nameText;
+    [BoxGroup("參照")] [LabelText("指令分派器")] [Required] [SerializeField]
+    private TagDispatcher _tagDispatcher;
 
-    [FoldoutGroup("GameObject")] [SerializeField]
-    private Image _characterImage;
+    [BoxGroup("文字")] [LabelText("每個字的間隔")] [SuffixLabel("秒", true)]
+    [Range(0f, 0.3f)] [SerializeField]
+    private float _typeSpeed = 0.03f;
 
-    [SerializeField] DialogChoiceButton _choiceButton;
-    [SerializeField] GameObject _choicePanel;
+    [BoxGroup("輸入")] [LabelText("按住 Ctrl 快轉的間隔")] [SuffixLabel("秒", true)]
+    [Tooltip("等同於每隔這麼久自動點一次")] [SerializeField]
+    private float _autoAdvanceInterval = 0.2f;
 
-    [SerializeField] private float _typeSpeed = 0.05f; // 調快一點，0.2 體感較慢
+    [FoldoutGroup("進階")] [LabelText("連續指令上限")]
+    [Tooltip("連續這麼多行 @ 指令都沒遇到文字就中斷，避免無限迴圈")] [SerializeField]
+    private int _maxCommandsPerStep = 50;
 
-    private List<DialogChoiceButton> _choices = new List<DialogChoiceButton>();
+    private Story _inkStory;
     private bool _onTyping;
     private bool _skip;
-    private Coroutine _typingCoroutine; // 儲存協程引用
+    private bool _advancing;
+    private float _autoAdvanceTimer;
 
-    [SerializeField] private List<DialogCharacterData> _characterData;
-
-    void Awake()
+    void Start()
     {
-        _inkStory = new Story(_inkAsset.text);
+        ResetInkStory();
+    }
 
-        _inkStory.BindExternalFunction("SetInterfere", (bool value) => { Debug.Log("SetInterfere : " + value); });
-        _inkStory.BindExternalFunction("CheckUsedItem",
-            (string itemName) =>
-            {
-                Debug.Log("CheckUsedItem : " + itemName);
-                
-                if (itemName == "FireBall")
-                    return true;
+    void Update()
+    {
+        if (IsAdvancePressed())
+        {
+            NextDialog();
+            _autoAdvanceTimer = _autoAdvanceInterval;
+            return;
+        }
 
-                return false;
-            });
+        if (!IsFastForwardHeld() || _inkStory == null || !_inkStory.canContinue)
+        {
+            // 放開後把計時器補滿，下次按住時立刻觸發第一次
+            _autoAdvanceTimer = _autoAdvanceInterval;
+            return;
+        }
+
+        _autoAdvanceTimer += Time.deltaTime;
+
+        if (_autoAdvanceTimer >= _autoAdvanceInterval)
+        {
+            _autoAdvanceTimer = 0f;
+            NextDialog();
+        }
+    }
+
+    /// <summary>按住 Ctrl 自動推進。</summary>
+    bool IsFastForwardHeld()
+    {
+        var keyboard = Keyboard.current;
+
+        if (keyboard == null)
+            return false;
+
+        return keyboard.leftCtrlKey.isPressed || keyboard.rightCtrlKey.isPressed;
+    }
+
+    bool IsAdvancePressed()
+    {
+        if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+            return true;
+
+        if (Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame)
+            return true;
+
+        return false;
     }
 
     [Button]
     void ResetInkStory()
     {
         _inkStory = new Story(_inkAsset.text);
+        _dialogueText.text = string.Empty;
+        _onTyping = false;
+        _skip = false;
+
+        // NextDialog();
+    }
+
+    /// <summary>清空對話框文字（@clear）。</summary>
+    public void ClearDialogueText()
+    {
+        if (_dialogueText == null) return;
+
+        _dialogueText.text = string.Empty;
+        _dialogueText.maxVisibleCharacters = 0;
     }
 
     [Button]
     void NextDialog()
     {
+        // 打字中再按一次 = 直接全部顯示
         if (_onTyping)
         {
             _skip = true;
             return;
         }
 
-        // 如果目前有選項，必須先選選項，不能直接下一步
-        if (_choices.Count > 0) return;
+        if (_advancing) return; // 指令執行中，忽略輸入
 
         if (!_inkStory.canContinue)
         {
-            if (_inkStory.currentChoices.Count > 0)
-                CreatChoices(_inkStory);
+            Debug.Log("對話結束");
             return;
         }
 
-        string text = _inkStory.Continue();
-        HandleTags(_inkStory.currentTags);
-
-        if (_typingCoroutine != null) StopCoroutine(_typingCoroutine);
-        _typingCoroutine = StartCoroutine(PlayDialogText(text));
+        StartCoroutine(AdvanceRoutine());
     }
 
-    public IEnumerator PlayDialogText(string text)
+    /// <summary>
+    /// 推進到下一句「文字」。
+    /// 途中的 @ 指令會依序執行完（不需要點擊），會等待的指令跑完才往下。
+    /// </summary>
+    IEnumerator AdvanceRoutine()
+    {
+        _advancing = true;
+
+        int commandCount = 0;
+
+        while (true)
+        {
+            string line = _inkStory.Continue().Trim();
+
+            if (_tagDispatcher != null)
+                _tagDispatcher.HandleTags(_inkStory.currentTags);
+
+            bool isCommand = TagDispatcher.IsCommandLine(line);
+
+            if (!isCommand && line.Length > 0)
+            {
+                _advancing = false;
+                yield return PlayDialogText(line);
+                yield break;
+            }
+
+            if (isCommand)
+            {
+                if (_tagDispatcher != null)
+                {
+                    _tagDispatcher.ExecuteCommand(line);
+
+                    while (_tagDispatcher.IsBusy)
+                        yield return null;
+                }
+
+                commandCount++;
+
+                if (commandCount >= _maxCommandsPerStep)
+                {
+                    Debug.LogError($"連續 {_maxCommandsPerStep} 行指令都沒有文字，中斷以免無限迴圈。");
+                    break;
+                }
+            }
+
+            if (!_inkStory.canContinue)
+            {
+                Debug.Log("對話結束");
+                break;
+            }
+        }
+
+        _advancing = false;
+    }
+
+    IEnumerator PlayDialogText(string text)
     {
         _onTyping = true;
         _skip = false;
 
         _dialogueText.text = text;
         _dialogueText.maxVisibleCharacters = 0;
-        _dialogueText.ForceMeshUpdate(); // 重要：確保文字資訊已更新
+        _dialogueText.ForceMeshUpdate(); // 先更新，才拿得到正確的字元數
 
-        // 使用 TMP 的字元統計，這會排除標籤代碼
+        // 等演出（例如淡入淡出）跑完才開始打字；打字中的跳過鍵也能跳過這段等待
+        while (_tagDispatcher != null && _tagDispatcher.IsBusy && !_skip)
+            yield return null;
+
         int totalVisibleCharacters = _dialogueText.textInfo.characterCount;
 
-        for (int i = 0; i <= totalVisibleCharacters; i++)
+        for (int i = 1; i <= totalVisibleCharacters; i++)
         {
             if (_skip)
-            {
-                _dialogueText.maxVisibleCharacters = totalVisibleCharacters;
                 break;
-            }
 
             _dialogueText.maxVisibleCharacters = i;
             yield return new WaitForSeconds(_typeSpeed);
         }
 
+        _dialogueText.maxVisibleCharacters = totalVisibleCharacters;
         _onTyping = false;
         _skip = false;
-        _typingCoroutine = null;
     }
-
-    void CreatChoices(Story story)
-    {
-        _choicePanel.SetActive(true);
-        for (int i = 0; i < story.currentChoices.Count; ++i)
-        {
-            Choice choice = story.currentChoices[i];
-            var button = Instantiate(_choiceButton, _choicePanel.transform);
-            button.SetButton(choice.text, i);
-            button.OnClick += Choices;
-            button.gameObject.SetActive(true);
-            _choices.Add(button);
-        }
-    }
-
-    void Choices(int index)
-    {
-        _inkStory.ChooseChoiceIndex(index);
-
-        // 倒序刪除子物件
-        for (int i = _choices.Count - 1; i >= 0; i--)
-        {
-            _choices[i].OnClick -= Choices;
-            Destroy(_choices[i].gameObject);
-        }
-
-        _choices.Clear();
-        _choicePanel.SetActive(false);
-
-        NextDialog();
-    }
-
-    void HandleTags(List<string> tags)
-    {
-        foreach (string tag in tags)
-        {
-            string key = tag.Trim();
-            var data = _characterData.FirstOrDefault(d => d.Key == key);
-
-            if (data == null)
-            {
-                _nameText.gameObject.SetActive(false);
-                _characterImage.gameObject.SetActive(false);
-                return;
-            }
-
-            if (String.IsNullOrEmpty(data.CharacterName))
-            {
-                _nameText.gameObject.SetActive(false);
-            }
-            else
-            {
-                _nameText.gameObject.SetActive(true);
-                _nameText.text = data.CharacterName;
-            }
-
-            if (data.CharacterSprite == null)
-            {
-                _characterImage.gameObject.SetActive(false);
-            }
-            else
-            {
-                _characterImage.gameObject.SetActive(true);
-                _characterImage.sprite = data.CharacterSprite;
-            }
-        }
-    }
-}
-
-[System.Serializable]
-internal class DialogCharacterData
-{
-    [field: SerializeField] public string Key { get; private set; }
-    [field: SerializeField] public string CharacterName { get; private set; }
-    [field: SerializeField] public Sprite CharacterSprite { get; private set; }
 }
