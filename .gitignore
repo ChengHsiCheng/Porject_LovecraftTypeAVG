@@ -173,3 +173,5 @@ x86/
 
 # Built Visual Studio Code Extensions
 *.vsix
+# JVM 當機記錄
+hs_err_pid*.log
