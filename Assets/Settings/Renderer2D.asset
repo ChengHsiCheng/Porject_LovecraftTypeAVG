@@ -1,5 +1,20 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-5924983829693445225
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: debc4b9b003aac84dbb3447f6a709adb, type: 3}
+  m_Name: DarkRendererFeature
+  m_EditorClassIdentifier: 
+  m_Active: 1
+  _shader: {fileID: 4800000, guid: 0c4c015ed09b37241864f98d51d61e71, type: 3}
+  _renderPassEvent: 600
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17,7 +32,11 @@ MonoBehaviour:
     hdrDebugViewPS: {fileID: 4800000, guid: 573620ae32aec764abd4d728906d2587, type: 3}
   m_RendererFeatures:
   - {fileID: 3836881043923755253}
-  m_RendererFeatureMap: f5608114fb563f35
+  - {fileID: 3134720189464614631}
+  - {fileID: 7746666029847080777}
+  - {fileID: 1418225689242318181}
+  - {fileID: -5924983829693445225}
+  m_RendererFeatureMap: f5608114fb563f35e796486367c3802b49ef9ee6b5af816b65359f12c08cae13974b304b993ac6ad
   m_UseNativeRenderPass: 0
   m_LayerMask:
     serializedVersion: 2
@@ -65,6 +84,36 @@ MonoBehaviour:
   m_DefaultLitMaterial: {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
   m_DefaultUnlitMaterial: {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
   m_DefaultMaskMaterial: {fileID: 2100000, guid: 15d0c3709176029428a0da2f8cecf0b5, type: 2}
+--- !u!114 &1418225689242318181
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6d2da3ca51ea414286de2f59eb10dc1, type: 3}
+  m_Name: DreamRendererFeature
+  m_EditorClassIdentifier: 
+  m_Active: 1
+  _shader: {fileID: 4800000, guid: cb8fb0895dc4d27469e80c1166c91b54, type: 3}
+  _renderPassEvent: 600
+--- !u!114 &3134720189464614631
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1212a57b55d512429a743c85e448a66, type: 3}
+  m_Name: GlitchRendererFeature
+  m_EditorClassIdentifier: 
+  m_Active: 1
+  _shader: {fileID: 4800000, guid: 19e6d062c45c26d48b31c3cf3096d2cd, type: 3}
+  _renderPassEvent: 600
 --- !u!114 &3836881043923755253
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -79,4 +128,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Active: 1
   _shader: {fileID: 4800000, guid: 8277a77f203289446b598ebaadcb4c93, type: 3}
+  _renderPassEvent: 600
+--- !u!114 &7746666029847080777
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2935abec210300a4fa1929b610bbcd7b, type: 3}
+  m_Name: GhostRendererFeature
+  m_EditorClassIdentifier: 
+  m_Active: 1
+  _shader: {fileID: 4800000, guid: 878bc320b1ba7534bb2b52b1cac12b95, type: 3}
   _renderPassEvent: 600

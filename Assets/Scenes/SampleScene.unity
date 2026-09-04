@@ -212,6 +212,7 @@ GameObject:
   - component: {fileID: 220808582}
   - component: {fileID: 220808584}
   - component: {fileID: 220808585}
+  - component: {fileID: 220808586}
   m_Layer: 5
   m_Name: DialogSyatem
   m_TagString: Untagged
@@ -254,7 +255,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f116b44f6f352f3418d9ce33f2f223df, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DialogSystem
-  _inkAsset: {fileID: 4900000, guid: 37529fd0bda24c7469a61d450c9d67ca, type: 3}
+  _inkAsset: {fileID: 4900000, guid: 2c24d162cbdd85e46ba43f20addd1afd, type: 3}
   _dialogueText: {fileID: 478750487}
   _tagDispatcher: {fileID: 220808583}
   _typeSpeed: 0.1
@@ -293,6 +294,7 @@ MonoBehaviour:
   _fxTextPlayer: {fileID: 220808584}
   _spriteLayer: {fileID: 220808585}
   _dialogSystem: {fileID: 220808581}
+  _screenEffect: {fileID: 220808586}
 --- !u!114 &220808584
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -344,6 +346,21 @@ MonoBehaviour:
   _previewCharacter: momoka
   _previewFace: normal
   _previewPosition: left
+--- !u!114 &220808586
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 220808579}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56ab6b1174e13b4468850861c68300ab, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _volume: {fileID: 1498645071}
+  _defaultDuration: 1
+  _defaultStrength: 0.5
 --- !u!1 &224836152
 GameObject:
   m_ObjectHideFlags: 0

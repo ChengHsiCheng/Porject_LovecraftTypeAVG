@@ -1,5 +1,101 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-7754958098480580333
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 113e55e70094cea46a7183d63437bace, type: 3}
+  m_Name: GlitchVolumeComponent
+  m_EditorClassIdentifier: 
+  active: 1
+  intensity:
+    m_OverrideState: 1
+    m_Value: 0
+  displacement:
+    m_OverrideState: 1
+    m_Value: 0.053
+  blockDensity:
+    m_OverrideState: 1
+    m_Value: 7.9
+  blockAmount:
+    m_OverrideState: 1
+    m_Value: 0.99
+  colorSplit:
+    m_OverrideState: 1
+    m_Value: 9
+  noise:
+    m_OverrideState: 1
+    m_Value: 0.133
+  speed:
+    m_OverrideState: 1
+    m_Value: 2.9
+--- !u!114 &-7274991317022822932
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 314533f549c0ce54582e470837a05c5d, type: 3}
+  m_Name: DarkVolumeComponent
+  m_EditorClassIdentifier: 
+  active: 1
+  intensity:
+    m_OverrideState: 1
+    m_Value: 1
+  darkness:
+    m_OverrideState: 1
+    m_Value: 0.256
+  vignette:
+    m_OverrideState: 1
+    m_Value: 3
+  color:
+    m_OverrideState: 1
+    m_Value: {r: 0, g: 0, b: 0, a: 1}
+--- !u!114 &-6363142212429513942
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0c60e83feacba1459f2d7ea7f4cf2e7, type: 3}
+  m_Name: DreamVolumeComponent
+  m_EditorClassIdentifier: 
+  active: 1
+  intensity:
+    m_OverrideState: 1
+    m_Value: 0
+  blur:
+    m_OverrideState: 1
+    m_Value: 0
+  glow:
+    m_OverrideState: 1
+    m_Value: 0
+  glowThreshold:
+    m_OverrideState: 1
+    m_Value: 0
+  desaturate:
+    m_OverrideState: 1
+    m_Value: 0
+  tint:
+    m_OverrideState: 1
+    m_Value: {r: 1, g: 1, b: 1, a: 1}
+  edgeSoftness:
+    m_OverrideState: 1
+    m_Value: 0
+  breathSpeed:
+    m_OverrideState: 1
+    m_Value: 0
 --- !u!114 &-5253133275582680840
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -15,28 +111,59 @@ MonoBehaviour:
   active: 1
   intensity:
     m_OverrideState: 1
-    m_Value: 0.53
+    m_Value: 0
   distortion:
     m_OverrideState: 1
-    m_Value: 0
+    m_Value: 0.058
   waveFrequency:
     m_OverrideState: 1
-    m_Value: 1
+    m_Value: 60
   waveSpeed:
     m_OverrideState: 1
-    m_Value: 0
+    m_Value: 9.4
   swirl:
     m_OverrideState: 1
-    m_Value: 0
+    m_Value: 0.091
   swirlSpeed:
     m_OverrideState: 1
     m_Value: 0
   chromatic:
     m_OverrideState: 1
-    m_Value: 0
+    m_Value: 10
   vignette:
     m_OverrideState: 1
+    m_Value: 2
+--- !u!114 &-2763000222013724048
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7fd1608ed88039e4f9d8898493dc4625, type: 3}
+  m_Name: GhostVolumeComponent
+  m_EditorClassIdentifier: 
+  active: 1
+  intensity:
+    m_OverrideState: 1
     m_Value: 0
+  offset:
+    m_OverrideState: 1
+    m_Value: {x: 12, y: 0}
+  count:
+    m_OverrideState: 1
+    m_Value: 2
+  falloff:
+    m_OverrideState: 1
+    m_Value: 1
+  driftSpeed:
+    m_OverrideState: 1
+    m_Value: 4.49
+  colorShift:
+    m_OverrideState: 1
+    m_Value: 1
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -51,3 +178,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   components:
   - {fileID: -5253133275582680840}
+  - {fileID: -2763000222013724048}
+  - {fileID: -7754958098480580333}
+  - {fileID: -7274991317022822932}
+  - {fileID: -6363142212429513942}
