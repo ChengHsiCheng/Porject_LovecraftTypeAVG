@@ -27,7 +27,7 @@ public class TagDispatcher : MonoBehaviour
     private DialogSystem _dialogSystem;
 
 
-    [LabelText("dizzy（畫面效果）")] [SerializeField]
+    [LabelText("畫面效果（dizzy／ghost／glitch／dream／dark）")] [SerializeField]
     private ScreenEffectDirector _screenEffect;
 
     private bool _waitForFade;
@@ -137,7 +137,23 @@ public class TagDispatcher : MonoBehaviour
                 break;
 
             case "dizzy":
-                HandleDizzy(tag);
+                HandleScreenEffect(tag, ScreenEffectKind.Dizzy);
+                break;
+
+            case "ghost":
+                HandleScreenEffect(tag, ScreenEffectKind.Ghost);
+                break;
+
+            case "glitch":
+                HandleScreenEffect(tag, ScreenEffectKind.Glitch);
+                break;
+
+            case "dream":
+                HandleScreenEffect(tag, ScreenEffectKind.Dream);
+                break;
+
+            case "dark":
+                HandleScreenEffect(tag, ScreenEffectKind.Dark);
                 break;
 
             case "sprite":
@@ -272,8 +288,12 @@ public class TagDispatcher : MonoBehaviour
             _stageDirector.SetSpeaker(string.Empty, string.Empty);
     }
 
-    /// <summary>@dizzy:on strength:0.6 dur:2 ／ @dizzy:off ／ @dizzy:pulse</summary>
-    void HandleDizzy(TagCommand tag)
+    /// <summary>
+    /// @dizzy / @ghost / @glitch，三個指令共用同一套語法：
+    ///   :on strength:0.6 dur:2 ／ :off ／ :pulse
+    /// on、off 是持續狀態，預設不擋住對話；pulse 是一次性的，預設會等它跑完。
+    /// </summary>
+    void HandleScreenEffect(TagCommand tag, ScreenEffectKind kind)
     {
         if (_screenEffect == null)
         {
@@ -284,33 +304,57 @@ public class TagDispatcher : MonoBehaviour
         float strength = tag.GetFloat("strength", -1f);
         float duration = tag.GetFloat("dur", -1f);
 
+        // 重影可以臨時指定殘影的偏移與層數
+        if (kind == ScreenEffectKind.Ghost && (tag.HasOption("offset") || tag.HasOption("count")))
+            _screenEffect.SetGhostShape(ParseOffset(tag.GetOption("offset")), (int)tag.GetFloat("count", 0f));
+
         switch (tag.Value)
         {
             case "on":
-                _screenEffect.SetDizzy(true, strength, duration);
+                _screenEffect.SetEffect(kind, true, strength, duration);
                 break;
 
             case "off":
-                _screenEffect.SetDizzy(false, strength, duration);
+                _screenEffect.SetEffect(kind, false, strength, duration);
                 break;
 
             case "pulse":
-                _screenEffect.PulseDizzy(strength, duration);
+                _screenEffect.PulseEffect(kind, strength, duration);
 
-                // 一次性的 pulse 預設要等它跑完
                 if (!tag.HasOption("nowait"))
                     _waitForScreenEffect = true;
 
                 return;
 
             default:
-                Debug.LogWarning($"dizzy 只接受 on / off / pulse，收到：{tag.Value}");
+                Debug.LogWarning($"{tag.Command} 只接受 on / off / pulse，收到：{tag.Value}");
                 return;
         }
 
-        // on/off 是持續狀態，預設不擋住對話；要等就明寫 wait
+        // 持續狀態預設不擋對話，要等就明寫 wait
         if (tag.HasOption("wait"))
             _waitForScreenEffect = true;
+    }
+
+    /// <summary>offset:20 兩軸相同；offset:20,6 分別是 X 與 Y。</summary>
+    static Vector2? ParseOffset(string value)
+    {
+        if (string.IsNullOrEmpty(value)) return null;
+
+        string[] parts = value.Split(',');
+
+        if (!float.TryParse(parts[0], out float x))
+        {
+            Debug.LogWarning($"看不懂的 offset：{value}");
+            return null;
+        }
+
+        float y = x;
+
+        if (parts.Length > 1 && !float.TryParse(parts[1], out y))
+            y = x;
+
+        return new Vector2(x, y);
     }
 
     static Color? ParseColor(string value)
